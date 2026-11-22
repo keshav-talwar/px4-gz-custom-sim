@@ -1,0 +1,109 @@
+diff --git a/src/modules/simulation/gz_bridge/GZBridge.cpp b/src/modules/simulation/gz_bridge/GZBridge.cpp
+index 3ef65e186f..b1d5cc4f7f 100644
+--- a/src/modules/simulation/gz_bridge/GZBridge.cpp
++++ b/src/modules/simulation/gz_bridge/GZBridge.cpp
+@@ -741,6 +741,30 @@ void GZBridge::navSatCallback(const gz::msgs::NavSat &msg)
+ 	// Apply noise model (based on ublox F9P)
+ 	addGpsNoise(latitude, longitude, altitude, vel_north, vel_east, vel_down);
+ 
++	// GPS spoofing attack: walk the reported position away from the truth at a
++	// constant rate. Velocity is shifted by the same rate so the fake track stays
++	// self-consistent and passes EKF2 innovation checks.
++	const float dt = (_gps_spoof_last_time > 0) ? (timestamp - _gps_spoof_last_time) * 1e-6f : 0.f;
++	_gps_spoof_last_time = timestamp;
++
++	if (_sim_gps_spf_en.get() == 1) {
++		const float offset_norm = sqrtf(_gps_spoof_offset_n * _gps_spoof_offset_n + _gps_spoof_offset_e * _gps_spoof_offset_e);
++
++		if (offset_norm < _sim_gps_spf_max.get()) {
++			_gps_spoof_offset_n += _sim_gps_spf_vn.get() * dt;
++			_gps_spoof_offset_e += _sim_gps_spf_ve.get() * dt;
++			vel_north += _sim_gps_spf_vn.get();
++			vel_east += _sim_gps_spf_ve.get();
++		}
++
++	} else {
++		_gps_spoof_offset_n = 0.f;
++		_gps_spoof_offset_e = 0.f;
++	}
++
++	latitude += math::degrees((double)_gps_spoof_offset_n / CONSTANTS_RADIUS_OF_EARTH);
++	longitude += math::degrees((double)_gps_spoof_offset_e / (CONSTANTS_RADIUS_OF_EARTH * cos(math::radians(latitude))));
++
+ 	// Device ID
+ 	device::Device::DeviceId id{};
+ 	id.devid_s.bus_type = device::Device::DeviceBusType::DeviceBusType_SIMULATION;
+diff --git a/src/modules/simulation/gz_bridge/GZBridge.hpp b/src/modules/simulation/gz_bridge/GZBridge.hpp
+index 9f90f4dfea..bc21cdf616 100644
+--- a/src/modules/simulation/gz_bridge/GZBridge.hpp
++++ b/src/modules/simulation/gz_bridge/GZBridge.hpp
+@@ -193,7 +193,16 @@ private:
+ 	const float _vel_noise_density = 0.2f;      // Velocity noise process density
+ 	const float _vel_markov_time = 0.85f;       // Velocity Markov process coefficient
+ 
++	// GPS spoofing attack state
++	float _gps_spoof_offset_n = 0.0f;
++	float _gps_spoof_offset_e = 0.0f;
++	hrt_abstime _gps_spoof_last_time{0};
++
+ 	DEFINE_PARAMETERS(
++		(ParamInt<px4::params::SIM_GPS_SPF_EN>) _sim_gps_spf_en,
++		(ParamFloat<px4::params::SIM_GPS_SPF_VN>) _sim_gps_spf_vn,
++		(ParamFloat<px4::params::SIM_GPS_SPF_VE>) _sim_gps_spf_ve,
++		(ParamFloat<px4::params::SIM_GPS_SPF_MAX>) _sim_gps_spf_max,
+ 		(ParamInt<px4::params::SIM_GPS_USED>) _sim_gps_used,
+ 		(ParamInt<px4::params::SIM_GZ_EN_LIDAR>) _sim_gz_en_lidar,
+ 		(ParamInt<px4::params::SIM_GZ_EN_FLOW>) _sim_gz_en_flow,
+diff --git a/src/modules/simulation/gz_bridge/parameters.c b/src/modules/simulation/gz_bridge/parameters.c
+index 0616da562f..92f52ff820 100644
+--- a/src/modules/simulation/gz_bridge/parameters.c
++++ b/src/modules/simulation/gz_bridge/parameters.c
+@@ -105,3 +105,48 @@ PARAM_DEFINE_INT32(SIM_GZ_EN_ODOM, 1);
+  * @value 1 Enabled
+  */
+ PARAM_DEFINE_INT32(SIM_GZ_EN_GPS, 1);
++
++/**
++ * Enable simulated GPS spoofing attack
++ *
++ * When enabled, the reported GPS position drifts away from the true position
++ * at SIM_GPS_SPF_VN / SIM_GPS_SPF_VE until SIM_GPS_SPF_MAX is reached.
++ * Disabling snaps GPS back to the truth.
++ *
++ * @boolean
++ * @group Simulation
++ */
++PARAM_DEFINE_INT32(SIM_GPS_SPF_EN, 0);
++
++/**
++ * GPS spoofing drift rate, north
++ *
++ * @unit m/s
++ * @min -10.0
++ * @max 10.0
++ * @decimal 2
++ * @group Simulation
++ */
++PARAM_DEFINE_FLOAT(SIM_GPS_SPF_VN, 0.0f);
++
++/**
++ * GPS spoofing drift rate, east
++ *
++ * @unit m/s
++ * @min -10.0
++ * @max 10.0
++ * @decimal 2
++ * @group Simulation
++ */
++PARAM_DEFINE_FLOAT(SIM_GPS_SPF_VE, 0.5f);
++
++/**
++ * GPS spoofing maximum horizontal offset
++ *
++ * @unit m
++ * @min 0.0
++ * @max 10000.0
++ * @decimal 1
++ * @group Simulation
++ */
++PARAM_DEFINE_FLOAT(SIM_GPS_SPF_MAX, 50.0f);

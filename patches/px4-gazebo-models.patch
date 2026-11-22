@@ -1,0 +1,188 @@
+diff --git a/models/OakD-Lite/model.sdf b/models/OakD-Lite/model.sdf
+index 15a418c..cfea909 100644
+--- a/models/OakD-Lite/model.sdf
++++ b/models/OakD-Lite/model.sdf
+@@ -40,8 +40,8 @@
+         <camera>
+           <horizontal_fov>1.204</horizontal_fov>
+           <image>
+-            <width>1920</width>
+-            <height>1080</height>
++            <width>640</width>
++            <height>480</height>
+           </image>
+           <clip>
+             <near>0.1</near>
+diff --git a/models/mono_cam/model.sdf b/models/mono_cam/model.sdf
+index de1a4ff..a7d8fc0 100644
+--- a/models/mono_cam/model.sdf
++++ b/models/mono_cam/model.sdf
+@@ -34,7 +34,7 @@
+         </geometry>
+       </visual>
+       <visual name="mono_cam/visual/lens_glass">
+-        <pose>0.014 0 0 0 0 0</pose>
++        <pose>0.015 0 0 0 0 0</pose>
+         <geometry>
+           <sphere>
+             <radius>0.0079</radius>
+diff --git a/models/x500_depth/model.sdf b/models/x500_depth/model.sdf
+index ae58503..e53605c 100644
+--- a/models/x500_depth/model.sdf
++++ b/models/x500_depth/model.sdf
+@@ -13,5 +13,56 @@
+       <child>camera_link</child>
+       <pose relative_to="base_link">.12 .03 .242 0 0 0</pose>
+     </joint>
++    <link name="lidar_sensor_link">
++      <pose relative_to="base_link">0 0 0.15 0 0 0</pose>
++      <inertial>
++        <mass>0.05</mass>
++        <inertia>
++          <ixx>0.00001</ixx>
++          <iyy>0.00001</iyy>
++          <izz>0.00001</izz>
++          <ixy>0.0</ixy>
++          <ixz>0.0</ixz>
++          <iyz>0.0</iyz>
++        </inertia>
++      </inertial>
++      <sensor name="lidar" type="gpu_lidar">
++        <gz_frame_id>lidar_sensor_link</gz_frame_id>
++        <pose relative_to="lidar_sensor_link">0 0 0 0 0 0</pose>
++        <update_rate>10</update_rate>
++        <lidar>
++          <scan>
++            <horizontal>
++              <samples>720</samples>
++              <resolution>1</resolution>
++              <min_angle>-3.14159265</min_angle>
++              <max_angle>3.14159265</max_angle>
++            </horizontal>
++            <vertical>
++              <samples>16</samples>
++              <resolution>1</resolution>
++              <min_angle>-0.26179939</min_angle>
++              <max_angle>0.26179939</max_angle>
++            </vertical>
++          </scan>
++          <range>
++            <min>0.3</min>
++            <max>50.0</max>
++            <resolution>0.01</resolution>
++          </range>
++          <noise>
++            <type>gaussian</type>
++            <mean>0.0</mean>
++            <stddev>0.01</stddev>
++          </noise>
++        </lidar>
++        <always_on>1</always_on>
++        <visualize>true</visualize>
++      </sensor>
++    </link>
++    <joint name="lidar_sensor_joint" type="fixed">
++      <parent>base_link</parent>
++      <child>lidar_sensor_link</child>
++    </joint>
+   </model>
+ </sdf>
+diff --git a/models/x500_lidar_front/model.sdf b/models/x500_lidar_front/model.sdf
+index c2f1ebd..38a41e3 100644
+--- a/models/x500_lidar_front/model.sdf
++++ b/models/x500_lidar_front/model.sdf
+@@ -1,22 +1,26 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <sdf version='1.9'>
+   <model name='x500_lidar_front'>
++
+     <include merge='true'>
+       <uri>x500</uri>
+     </include>
++
+     <include merge='true'>
+-      <uri>model://LW20</uri>
+-      <pose relative_to="base_link">.15 0 .01 0 0 0</pose>
++      <uri>model://OakD-Lite</uri>
++      <pose relative_to="base_link">0.12 0.03 0.242 0 0 0</pose>
+     </include>
+-    <joint name="lidar_model_joint" type="fixed">
++
++    <joint name="CameraJoint" type="fixed">
+       <parent>base_link</parent>
+-      <child>lw20_link</child>
+-      <pose relative_to="base_link">-0 0 0 0 0 0</pose>
++      <child>camera_link</child>
++      <pose relative_to="base_link">0.12 0.03 0.242 0 0 0</pose>
+     </joint>
++
+     <link name="lidar_sensor_link">
+-      <pose relative_to="base_link">0.3 0 0.01 0 0 0</pose>
++      <pose relative_to="base_link">0 0 0.15 0 0 0</pose>
+       <inertial>
+-        <mass>0.001</mass>
++        <mass>0.05</mass>
+         <inertia>
+           <ixx>0.00001</ixx>
+           <iyy>0.00001</iyy>
+@@ -26,38 +30,45 @@
+           <iyz>0.0</iyz>
+         </inertia>
+       </inertial>
+-      <sensor name='lidar' type='gpu_lidar'>
++      <sensor name="lidar" type="gpu_lidar">
+         <gz_frame_id>lidar_sensor_link</gz_frame_id>
+-        <pose relative_to="base_link">.15 0 .01 1.57 0 0</pose>
+-        <update_rate>50</update_rate>
+-        <ray>
++        <pose relative_to="lidar_sensor_link">0 0 0 0 0 0</pose>
++        <update_rate>10</update_rate>
++        <lidar>
+           <scan>
+             <horizontal>
+-              <samples>1</samples>
++              <samples>720</samples>
+               <resolution>1</resolution>
+-              <min_angle>0</min_angle>
+-              <max_angle>0</max_angle>
++              <min_angle>-3.14159265</min_angle>
++              <max_angle>3.14159265</max_angle>
+             </horizontal>
+             <vertical>
+-              <samples>1</samples>
++              <samples>16</samples>
+               <resolution>1</resolution>
+-              <min_angle>0</min_angle>
+-              <max_angle>0</max_angle>
++              <min_angle>-0.26179939</min_angle>
++              <max_angle>0.26179939</max_angle>
+             </vertical>
+           </scan>
+           <range>
+-            <min>0.1</min>
+-            <max>100.0</max>
++            <min>0.3</min>
++            <max>50.0</max>
+             <resolution>0.01</resolution>
+           </range>
+-        </ray>
++          <noise>
++            <type>gaussian</type>
++            <mean>0.0</mean>
++            <stddev>0.01</stddev>
++          </noise>
++        </lidar>
+         <always_on>1</always_on>
+         <visualize>true</visualize>
+       </sensor>
+     </link>
++
+     <joint name="lidar_sensor_joint" type="fixed">
+       <parent>base_link</parent>
+       <child>lidar_sensor_link</child>
+     </joint>
++
+   </model>
+-</sdf>
++</sdf>
+\ No newline at end of file

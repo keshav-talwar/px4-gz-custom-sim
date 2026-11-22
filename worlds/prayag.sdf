@@ -1,0 +1,150 @@
+<?xml version="1.0" ?>
+<sdf version="1.9">
+  <world name="prayag">
+    <gravity>0 0 -9.8066</gravity>
+
+    <spherical_coordinates>
+      <surface_model>EARTH_WGS84</surface_model>
+      <latitude_deg>30.28723457907561</latitude_deg>
+      <longitude_deg>78.9810562133789</longitude_deg>
+      <elevation>621.6000000000004</elevation>
+    </spherical_coordinates>
+
+        
+    <physics name="1ms" type="ignored">
+      <dart>
+        <!-- Heightmaps behave better with the bullet collision detector -->
+        <collision_detector>bullet</collision_detector>
+      </dart>
+    </physics>
+
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <attenuation>
+        <range>1000</range>
+        <constant>0.9</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+
+
+    <!-- Environment model -->
+    <include>
+      <uri>model://prayag</uri>
+    </include>
+    <!-- 3D landmarks for KISS-ICP tracking -->
+    <model name="box_1">
+      <pose>10 0 1 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <visual name="visual"><geometry><box><size>2 2 4</size></box></geometry></visual>
+        <collision name="collision"><geometry><box><size>2 2 4</size></box></geometry></collision>
+      </link>
+    </model>
+
+    <model name="box_2">
+      <pose>-10 0 1 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <visual name="visual"><geometry><box><size>2 2 4</size></box></geometry></visual>
+        <collision name="collision"><geometry><box><size>2 2 4</size></box></geometry></collision>
+      </link>
+    </model>
+
+    <model name="box_3">
+      <pose>0 10 1 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <visual name="visual"><geometry><box><size>2 2 4</size></box></geometry></visual>
+        <collision name="collision"><geometry><box><size>2 2 4</size></box></geometry></collision>
+      </link>
+    </model>
+
+    <model name="box_4">
+      <pose>0 -10 1 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <visual name="visual"><geometry><box><size>2 2 4</size></box></geometry></visual>
+        <collision name="collision"><geometry><box><size>2 2 4</size></box></geometry></collision>
+      </link>
+    </model>
+
+    <model name="box_5">
+      <pose>20 20 1 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <visual name="visual"><geometry><box><size>2 2 6</size></box></geometry></visual>
+        <collision name="collision"><geometry><box><size>2 2 6</size></box></geometry></collision>
+      </link>
+    </model>
+
+    <model name="box_6">
+      <pose>-20 20 1 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <visual name="visual"><geometry><box><size>2 2 6</size></box></geometry></visual>
+        <collision name="collision"><geometry><box><size>2 2 6</size></box></geometry></collision>
+      </link>
+    </model>
+
+    <model name="box_7">
+      <pose>20 -20 1 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <visual name="visual"><geometry><box><size>2 2 6</size></box></geometry></visual>
+        <collision name="collision"><geometry><box><size>2 2 6</size></box></geometry></collision>
+      </link>
+    </model>
+
+    <model name="box_8">
+      <pose>-20 -20 1 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <visual name="visual"><geometry><box><size>2 2 6</size></box></geometry></visual>
+        <collision name="collision"><geometry><box><size>2 2 6</size></box></geometry></collision>
+      </link>
+    </model>
+
+    <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"/>
+    <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands"/>
+    <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"/>
+    <plugin filename="gz-sim-contact-system" name="gz::sim::systems::Contact"/>
+    <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu"/>
+    <plugin filename="gz-sim-air-pressure-system" name="gz::sim::systems::AirPressure"/>
+    <plugin filename="gz-sim-magnetometer-system" name="gz::sim::systems::Magnetometer"/>
+    <plugin filename="gz-sim-navsat-system" name="gz::sim::systems::NavSat"/>
+    <plugin filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+    <!-- Helipad launch platform -->
+    <model name="helipad">
+      <static>true</static>
+      <pose>0 0 0.1 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>10 10 0.2</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>10 10 0.2</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.1 0.1 0.1 1</ambient>
+            <diffuse>0.2 0.2 0.2 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+  </world>
+</sdf>
