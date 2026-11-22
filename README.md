@@ -4,8 +4,8 @@ My changes on top of **PX4-Autopilot** and **PX4-gazebo-models** for the drone G
 simulation. PX4 itself is about 8 GB, so instead of a fork this repo keeps **patches plus extra files**
 and an installer that applies them to a clean PX4 checkout.
 
-Used by [`Spoofing-of-drone-in-simulation`](https://github.com/Keshav-cse/Spoofing-of-drone-in-simulation)
-(ROS 2 stack) and [`gnss-spoof-lab`](https://github.com/Keshav-cse/gnss-spoof-lab).
+Used by [`Spoofing-of-drone-in-simulation`](https://github.com/keshav-talwar/Spoofing-of-drone-in-simulation)
+(ROS 2 stack) and [`gnss-spoof-lab`](https://github.com/keshav-talwar/gnss-spoof-lab).
 
 ## What's changed
 
